@@ -19,10 +19,18 @@ const productSchema = new mongoose.Schema(
             type: Number,
             required: true,
         },
+        vendor: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            required: true,
+        },
+        thumbnail: {
+            type: String
+        },
         category: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'ProductCategory', // Reference to ProductCategory model
-            required: true,
+            // required: true,
         },
     },
     {
