@@ -1,17 +1,19 @@
-import express, { Application, Request, Response } from 'express';
+import express from 'express';
 import dotenv from 'dotenv';
 
 import connectDB from './db/db';
 
+import customerRoutes from './routes/customer';
+
 dotenv.config();
-
-const app: Application = express();
-
-app.get('/', (req: Request, res: Response) => {
-    res.send('APP IS RUNNING');
-})
-
 connectDB();
+
+const app = express();
+app.use(express.json());
+
+app.get('/', (req, res) => { res.send('APP IS RUNNING') })
+
+app.use('/customer', customerRoutes);
 
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
