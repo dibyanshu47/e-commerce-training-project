@@ -26,23 +26,19 @@ export const updateProfile = async (req: Request, res: Response) => {
         const vendorId = (req as any).user.userId; // Get the vendor's user ID from the decoded token
         const { name, email } = req.body;
 
-        // Find the vendor document by ID
-        const vendor = await User.findById(vendorId);
+        // Update the vendor's profile in the database
+        const updatedVendor = await User.findByIdAndUpdate(
+            vendorId,
+            {
+                name,
+                email,
+            },
+            { new: true } // Return the updated document
+        );
 
-        if (!vendor) {
+        if (!updatedVendor) {
             return res.status(404).json({ message: 'Vendor not found.' });
         }
-
-        // Update the vendor's profile based on the fields provided in the request
-        if (name) {
-            vendor.name = name;
-        }
-        if (email) {
-            vendor.email = email;
-        }
-
-        // Save the updated vendor document
-        const updatedVendor = await vendor.save();
 
         return res.status(200).json(updatedVendor);
     } catch (error) {
@@ -61,7 +57,7 @@ export const addProduct = async (req: Request, res: Response) => {
 
         // Iterate through the provided image URLs and save them to the database
         for (const imageUrl of imageUrls) {
-            const productImage = await ProductImage.create({ product: newProduct._id, imageUrl });
+            await ProductImage.create({ product: newProduct._id, imageUrl });
         }
 
         // Default should be ...newProduct, but the main object is in _doc property and if we use spread operator we get to see other properties as well
@@ -85,5 +81,62 @@ export const viewProducts = async (req: Request, res: Response) => {
     } catch (error) {
         console.error('Error fetching vendor products:', error);
         return res.status(500).json({ message: 'Error fetching vendor products.' });
+    }
+}
+
+export const updateProduct = async (req: Request, res: Response) => {
+    try {
+        const vendorId = (req as any).user.userId; // Get the vendor's user ID from the decoded token
+        const productId = req.params.productId;
+        const { name, description, price, stockQuantity, thumbnail } = req.body;
+
+        // Check if the product exists and belongs to the vendor
+        const product = await Product.findOne({ _id: productId, vendor: vendorId });
+
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found or does not belong to the vendor.' });
+        }
+
+        // Update the product details in the database
+        const updatedProduct = await Product.findByIdAndUpdate(
+            productId,
+            {
+                name,
+                description,
+                price,
+                stockQuantity,
+            },
+            { new: true } // Return the updated document
+        );
+
+        return res.status(200).json(updatedProduct);
+    } catch (error) {
+        console.error('Error updating product:', error);
+        return res.status(500).json({ message: 'Error updating product.' });
+    }
+}
+
+export const deleteProduct = async (req: Request, res: Response) => {
+    try {
+        const vendorId = (req as any).user.userId; // Get the vendor's user ID from the decoded token
+        const productId = req.params.productId;
+
+        // Check if the product exists and belongs to the vendor
+        const product = await Product.findOne({ _id: productId, vendor: vendorId });
+
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found or does not belong to the vendor.' });
+        }
+
+        // Delete the product images from the database
+        await ProductImage.deleteMany({ product: productId });
+
+        // Delete the product from the database
+        await Product.findByIdAndDelete(productId);
+
+        return res.status(204).send();
+    } catch (error) {
+        console.error('Error deleting product:', error);
+        return res.status(500).json({ message: 'Error deleting product.' });
     }
 }

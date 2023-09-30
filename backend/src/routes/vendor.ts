@@ -1,7 +1,7 @@
 import express from 'express';
 import auth from '../middlewares/auth';
 
-import { getProfile, updateProfile, addProduct, viewProducts } from '../controllers/vendor';
+import { getProfile, updateProfile, addProduct, viewProducts, updateProduct, deleteProduct } from '../controllers/vendor';
 
 const router = express.Router();
 
@@ -21,9 +21,9 @@ router.post('/products', addProduct);
 router.get('/products', viewProducts);
 
 // Update Product
-// router.put('/products/:productId', VendorController.updateProduct);
+router.put('/products/:productId', updateProduct);
 
 // Delete Product
-// router.delete('/products/:productId', VendorController.deleteProduct);
+router.delete('/products/:productId', deleteProduct);
 
 export default router;
