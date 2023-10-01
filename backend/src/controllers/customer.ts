@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import User from '../models/User/User';
 import Product from '../models/Product/Product';
 import Cart from '../models/Cart/Cart';
+import Order from '../models/Order/Order';
 
 export const getProfile = async (req: Request, res: Response) => {
     try {
@@ -73,7 +74,8 @@ export const addToCart = async (req: Request, res: Response) => {
             existingItem.quantity += quantity;
         } else {
             // If not, add a new item to the cart
-            cart.items.push({ product: productId, quantity });
+            const result: any = await Product.findById(productId).select("price");
+            cart.items.push({ product: productId, quantity, unitPrice: result.price });
         }
 
         // Save the updated cart
@@ -187,6 +189,49 @@ export const emptyCart = async (req: Request, res: Response) => {
         await cart.save();
 
         res.status(200).json({ message: 'Cart emptied successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+export const createOrder = async (req: Request, res: Response) => {
+    try {
+        const customerId = (req as any).user.userId;
+        const { products, totalAmount, shippingAddress } = req.body; // add paymentInfo later
+
+        // Validate input (you can add more validation as needed)
+        if (!customerId || !products || !totalAmount || !shippingAddress) { // check for paymentInfo later
+            return res.status(400).json({ error: 'Invalid input data' });
+        }
+
+        // Calculate the expected total amount
+        const expectedTotalAmount = products.reduce((accumulator: Number, currentProduct: any) => {
+            return accumulator + currentProduct.unitPrice;
+        }, 0);
+
+        if (expectedTotalAmount !== totalAmount) {
+            return res.status(400).json({ error: 'Invalid total amount' });
+        }
+
+        const newOrder = await Order.create({
+            user: customerId,
+            products,
+            totalAmount,
+            shippingAddress,
+        });
+
+        res.status(201).json({ message: 'Order created successfully', order: newOrder });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+export const getOrders = async (req: Request, res: Response) => {
+    try {
+        const orders = await Order.find();
+        res.status(200).json({ orders });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Internal server error' });

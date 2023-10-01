@@ -1,7 +1,7 @@
 import express from 'express';
 import auth from '../middlewares/auth';
 
-import { getProfile, updateProfile, viewProducts, addToCart, viewCart, updateCart, removeFromCart, emptyCart, viewWishlist, addToWishlist, removeFromWishlist } from '../controllers/customer';
+import { getProfile, updateProfile, viewProducts, addToCart, viewCart, updateCart, removeFromCart, emptyCart, viewWishlist, addToWishlist, removeFromWishlist, createOrder, getOrders } from '../controllers/customer';
 
 const router = express.Router();
 
@@ -31,6 +31,12 @@ router.delete('/cart/:productId', removeFromCart);
 
 // Empty Cart
 router.delete('/cart', emptyCart);
+
+// Create Order
+router.post('/order', createOrder);
+
+// Get Orders
+router.get('/order', getOrders);
 
 // Wishlist
 router.get('/wishlist', viewWishlist);
