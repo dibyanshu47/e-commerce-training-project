@@ -1,6 +1,7 @@
 import express from 'express';
-
 import auth from '../middlewares/auth';
+
+import { getProfile, updateProfile, viewProducts, addToCart, viewCart, updateCart, removeFromCart, emptyCart, viewWishlist, addToWishlist, removeFromWishlist } from '../controllers/customer';
 
 const router = express.Router();
 
@@ -8,36 +9,36 @@ const router = express.Router();
 router.use(auth);
 
 // Customer Profile
-// router.get('/profile', CustomerController.getProfile);
+router.get('/profile', getProfile);
 
 // Update Customer Profile
-// router.put('/profile', CustomerController.updateProfile);
+router.put('/profile', updateProfile);
 
 // View Products
-// router.get('/products', CustomerController.viewProducts);
+router.get('/products', viewProducts);
 
 // Add to Cart
-// router.post('/cart', CustomerController.addToCart);
+router.post('/cart', addToCart);
 
 // View Cart
-// router.get('/cart', CustomerController.viewCart);
+router.get('/cart', viewCart);
 
 // Update Cart
-// router.put('/cart', CustomerController.updateCart);
+router.put('/cart', updateCart);
 
-// Place Order
-// router.post('/orders', CustomerController.placeOrder);
+// Delete from Cart
+router.delete('/cart/:productId', removeFromCart);
 
-// Order History
-// router.get('/orders', CustomerController.orderHistory);
+// Empty Cart
+router.delete('/cart', emptyCart);
 
 // Wishlist
-// router.get('/wishlist', CustomerController.viewWishlist);
+router.get('/wishlist', viewWishlist);
 
 // Add to Wishlist
-// router.post('/wishlist', CustomerController.addToWishlist);
+router.post('/wishlist', addToWishlist);
 
 // Remove from Wishlist
-// router.delete('/wishlist/:productId', CustomerController.removeFromWishlist);
+router.delete('/wishlist/:productId', removeFromWishlist);
 
 export default router;
