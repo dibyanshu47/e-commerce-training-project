@@ -1,7 +1,7 @@
 import express from 'express';
 import auth from '../middlewares/auth';
 
-import { getProfile, updateProfile, viewProducts, addToCart, viewCart, updateCart, removeFromCart, emptyCart, viewWishlist, addToWishlist, removeFromWishlist, createOrder, getOrders } from '../controllers/customer';
+import { getProfile, updateProfile, viewProducts, viewProduct, addToCart, viewCart, updateCart, removeFromCart, emptyCart, viewWishlist, addToWishlist, removeFromWishlist, createOrder, getOrders } from '../controllers/customer';
 
 const router = express.Router();
 
@@ -16,6 +16,9 @@ router.put('/profile', updateProfile);
 
 // View Products
 router.get('/products', viewProducts);
+
+// View Product
+router.get('/products/:productId', viewProduct);
 
 // Add to Cart
 router.post('/cart', addToCart);

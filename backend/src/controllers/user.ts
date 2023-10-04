@@ -53,7 +53,7 @@ export const login = async (req: Request, res: Response) => {
         const { email, password } = req.body;
 
         // Check if a user with the provided username exists
-        const user = await User.findOne({ email });
+        const user: any = await User.findOne({ email }).populate('userCategory');
 
         // If no user found, return an error
         if (!user) {
@@ -72,7 +72,7 @@ export const login = async (req: Request, res: Response) => {
         const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET_KEY);
 
         // Return the token in the response
-        return res.status(200).json({ message: 'Authentication successful', token });
+        return res.status(200).json({ message: 'Authentication successful', id: user._id, name: user.name, role: user.userCategory.name, token });
     } catch (error) {
         console.error('Error during login:', error);
         return res.status(500).json({ message: 'Authentication failed. Please try again later.' });

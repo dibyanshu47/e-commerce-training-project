@@ -1,43 +1,37 @@
-import React, { useState } from 'react';
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
 
 const Orders: React.FC = () => {
-    // Sample order history data with product images for demonstration purposes
-    const initialOrderHistory = [
-        {
-            id: 1,
-            date: '2023-01-15',
-            items: [
-                {
-                    name: 'Product 1',
-                    price: 10.99,
-                    quantity: 2,
-                    imageUrl: 'https://m.media-amazon.com/images/I/618Bb+QzCmL._SL1500_.jpg',
-                },
-                {
-                    name: 'Product 2',
-                    price: 19.99,
-                    quantity: 1,
-                    imageUrl: 'https://m.media-amazon.com/images/I/81LskAU5h1L._SL1500_.jpg',
-                },
-            ],
-            total: 41.97,
-        },
-        {
-            id: 2,
-            date: '2023-02-20',
-            items: [
-                {
-                    name: 'Product 3',
-                    price: 5.99,
-                    quantity: 3,
-                    imageUrl: 'https://m.media-amazon.com/images/I/712CzUClvjL._SL1500_.jpg',
-                },
-            ],
-            total: 17.97,
-        },
-    ];
 
-    const [orderHistory, setOrderHistory] = useState(initialOrderHistory);
+    const { token } = JSON.parse(localStorage.getItem('user') as string);
+
+    const [orderHistory, setOrderHistory] = useState([] as any);
+
+    useEffect(() => {
+        const getOrderHistory = async () => {
+            try {
+                const { data } = await axios.get('http://localhost:8000/customer/order', { headers: { 'Authorization': `Bearer ${token}` } });
+                setOrderHistory(data);
+            } catch (error: any) {
+                console.log('Error while fetching order', error.message);
+            }
+        }
+        getOrderHistory();
+    }, [token])
+
+    // Function to format a date string in "dd-mm-yyyy" format
+    const formatDate = (dateString: any) => {
+        const date = new Date(dateString);
+        const day = date.getDate();
+        const month = date.getMonth() + 1;
+        const year = date.getFullYear();
+        return `${day < 10 ? '0' : ''}${day}-${month < 10 ? '0' : ''}${month}-${year}`;
+    };
+
+    // Calculate the total price of items in the cart
+    const calculateTotal = (products: any) => {
+        return products.reduce((total: any, item: any) => total + item.product.price * item.quantity, 0);
+    };
 
     return (
         <div className="container navbar-spacing">
@@ -47,23 +41,27 @@ const Orders: React.FC = () => {
                     <table className="table table-striped">
                         <thead>
                             <tr>
-                                <th>Order ID</th>
                                 <th>Date</th>
                                 <th>Items</th>
                                 <th>Total</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {orderHistory.map((order) => (
-                                <tr key={order.id}>
-                                    <td>{order.id}</td>
-                                    <td>{order.date}</td>
+                            {orderHistory.map((order: any) => (
+                                <tr key={order._id}>
+                                    <td>{formatDate(order.orderDate)}</td>
+                                    {/* <td>
+                                        <div>
+                                            <p>{order.shippingAddress.addressLine1}</p>
+                                            <p>{order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}</p>
+                                        </div>
+                                    </td> */}
                                     <td>
                                         <ul>
-                                            {order.items.map((item, index) => (
+                                            {order.products.map((item: any, index: any) => (
                                                 <li key={index}>
                                                     <img
-                                                        src={item.imageUrl}
+                                                        src={item.product.thumbnail}
                                                         alt={item.name}
                                                         style={{
                                                             maxWidth: '50px',
@@ -71,12 +69,12 @@ const Orders: React.FC = () => {
                                                             marginRight: '10px',
                                                         }}
                                                     />
-                                                    {item.name} (Qty: {item.quantity}) - ${item.price.toFixed(2)}
+                                                    {item.product.name} (Qty: {item.quantity}) - ${item.product.price.toFixed(2)}
                                                 </li>
                                             ))}
                                         </ul>
                                     </td>
-                                    <td>${order.total.toFixed(2)}</td>
+                                    <td>${calculateTotal(order.products).toFixed(2)}</td>
                                 </tr>
                             ))}
                         </tbody>

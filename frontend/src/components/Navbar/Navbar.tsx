@@ -1,9 +1,17 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Navbar: React.FC = () => {
+
+    const navigate = useNavigate();
+
+    const handleLogoutClick = () => {
+        localStorage.clear();
+        navigate('/login');
+    }
+
     return (
-        <nav className="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+        <nav className="navbar navbar-expand-lg navbar-light bg-light">
             <div className="container">
                 {/* Left-aligned logo */}
                 <Link className="navbar-brand" to="/">
@@ -14,14 +22,18 @@ const Navbar: React.FC = () => {
                 <div className="ml-auto">
                     <ul className="navbar-nav">
                         <li className="nav-item">
-                            <Link className="nav-link btn" to="/orders">
+                            <button className="nav-link" onClick={handleLogoutClick}>
+                                Logout
+                            </button>
+                        </li>
+                        <li className="nav-item">
+                            <Link className="nav-link" to="/orders">
                                 Orders
                             </Link>
                         </li>
                         <li className="nav-item">
                             <Link className="nav-link" to="/cart">
                                 <i className="bi bi-cart-fill"></i> Cart
-                                <span className="badge bg-primary">{3}</span>
                             </Link>
                         </li>
                     </ul>

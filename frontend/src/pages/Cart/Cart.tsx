@@ -1,56 +1,72 @@
-import React, { useState } from 'react';
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const CartPage: React.FC = () => {
-    // Sample cart items with product images for demonstration purposes
-    const initialCartItems = [
-        {
-            id: 1,
-            name: 'Product 1',
-            price: 10.99,
-            quantity: 2,
-            imageUrl: 'https://m.media-amazon.com/images/I/61bX2AoGj2L._SL1500_.jpg',
-        },
-        {
-            id: 2,
-            name: 'Product 2',
-            price: 19.99,
-            quantity: 1,
-            imageUrl: 'https://m.media-amazon.com/images/I/618Bb+QzCmL._SL1500_.jpg',
-        },
-        {
-            id: 3,
-            name: 'Product 3',
-            price: 5.99,
-            quantity: 3,
-            imageUrl: 'https://m.media-amazon.com/images/I/81LskAU5h1L._SL1500_.jpg',
-        },
-    ];
 
-    const [cartItems, setCartItems] = useState(initialCartItems);
+    const navigate = useNavigate();
+
+    const { token } = JSON.parse(localStorage.getItem('user') as string);
+
+    const [cartItems, setCartItems] = useState([] as any);
+
+    useEffect(() => {
+        const getCart = async () => {
+            try {
+                const { data } = await axios.get('http://localhost:8000/customer/cart', { headers: { 'Authorization': `Bearer ${token}` } });
+                console.log(data);
+                setCartItems(data.items);
+            } catch (error: any) {
+                console.log('Error while fetching cart:', error.message);
+            }
+        }
+        getCart();
+    }, [token])
 
     // Calculate the total price of items in the cart
     const calculateTotal = () => {
-        return cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+        return cartItems.reduce((total: any, item: any) => total + item.product.price * item.quantity, 0);
     };
 
-    const handleAddToCart = (id: number) => {
-        // Find the item in the cart
-        const updatedCartItems = cartItems.map((item) => {
-            if (item.id === id) {
-                return { ...item, quantity: item.quantity + 1 };
-            }
-            return item;
-        });
+    const handleUpdateQuantity = async (id: any, q: any) => {
+        try {
+            axios.put('http://localhost:8000/customer/cart', { productId: id, quantity: q }, { headers: { 'Authorization': `Bearer ${token}` } })
+            const updatedCartItems = cartItems.map((item: any) =>
+                item.product._id === id
+                    ? { ...item, quantity: parseInt(q) }
+                    : item
+            );
+            setCartItems(updatedCartItems);
+        } catch (error: any) {
+            console.log('Error while updating cart:', error.message);
+        }
+    }
 
-        setCartItems(updatedCartItems);
-    };
-
-    const handleRemoveFromCart = (id: number) => {
+    const handleRemoveFromCart = async (id: any) => {
         // Remove the item from the cart
-        const updatedCartItems = cartItems.filter((item) => item.id !== id);
-
-        setCartItems(updatedCartItems);
+        try {
+            await axios.delete(`http://localhost:8000/customer/cart/${id}`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const updatedCartItems = cartItems.filter((item: any) => item.product._id !== id);
+            setCartItems(updatedCartItems);
+        } catch (error: any) {
+            console.log('Error while deleting from cart:', error.message);
+        }
     };
+
+    const placeOrder = async () => {
+        if (cartItems.length === 0) return;
+        try {
+            const products = cartItems.map((item: any) => ({
+                product: item.product._id,
+                quantity: item.quantity
+            }))
+            await axios.post('http://localhost:8000/customer/order', { products }, { headers: { 'Authorization': `Bearer ${token}` } });
+            await axios.delete('http://localhost:8000/customer/cart', { headers: { 'Authorization': `Bearer ${token}` } });
+            navigate('/orders');
+        } catch (error: any) {
+            console.log('Error while creating order:', error.message);
+        }
+    }
 
     return (
         <div className="container navbar-spacing">
@@ -69,29 +85,34 @@ const CartPage: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {cartItems.map((item) => (
-                                <tr key={item.id}>
+                            {cartItems.map((item: any) => (
+                                <tr key={item.product._id}>
                                     <td>
                                         <img
-                                            src={item.imageUrl}
-                                            alt={item.name}
+                                            src={item.product.thumbnail}
+                                            alt={item.product.name}
                                             style={{ maxWidth: '100px', maxHeight: '100px' }}
                                         />
                                     </td>
-                                    <td>{item.name}</td>
-                                    <td>${item.price.toFixed(2)}</td>
-                                    <td>{item.quantity}</td>
-                                    <td>${(item.price * item.quantity).toFixed(2)}</td>
+                                    <td>{item.product.name}</td>
+                                    <td>${item.product.price.toFixed(2)}</td>
+                                    <td>
+                                        <select
+                                            value={item.quantity}
+                                            onChange={(e) => handleUpdateQuantity(item.product._id, e.target.value)}
+                                        >
+                                            {[1, 2, 3, 4, 5, 6].map((quantity) => (
+                                                <option key={quantity} value={quantity}>
+                                                    {quantity}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </td>
+                                    <td>${(item.product.price * item.quantity).toFixed(2)}</td>
                                     <td>
                                         <button
-                                            className="btn btn-primary btn-sm"
-                                            onClick={() => handleAddToCart(item.id)}
-                                        >
-                                            Add
-                                        </button>
-                                        <button
                                             className="btn btn-danger btn-sm"
-                                            onClick={() => handleRemoveFromCart(item.id)}
+                                            onClick={() => handleRemoveFromCart(item.product._id)}
                                         >
                                             Remove
                                         </button>
@@ -102,7 +123,7 @@ const CartPage: React.FC = () => {
                     </table>
                     <div className="text-end">
                         <h4>Total: ${calculateTotal().toFixed(2)}</h4>
-                        <button className="btn btn-primary">Checkout</button>
+                        <button className="btn btn-primary" onClick={placeOrder}>Checkout</button>
                     </div>
                 </div>
             </div>

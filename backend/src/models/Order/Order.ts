@@ -7,16 +7,14 @@ const orderSchema = new mongoose.Schema({
         {
             product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true }, // Reference to the product in the order
             quantity: { type: Number, required: true },
-            unitPrice: { type: Number, required: true },
         },
     ],
-    totalAmount: { type: Number, required: true },
-    shippingAddress: {
-        addressLine1: { type: String, required: true },
-        city: { type: String, required: true },
-        state: { type: String, required: true },
-        zipCode: { type: String, required: true },
-    },
+    // shippingAddress: {
+    //     addressLine1: { type: String, required: true },
+    //     city: { type: String, required: true },
+    //     state: { type: String, required: true },
+    //     zipCode: { type: String, required: true },
+    // },
     // will be implemented later
     // paymentInfo: {
     //     cardNumber: { type: String, required: true }, // You might consider storing only a reference to the payment method used instead of the actual card details for security.

@@ -4,6 +4,7 @@ import User from '../models/User/User';
 import Product from '../models/Product/Product';
 import Cart from '../models/Cart/Cart';
 import Order from '../models/Order/Order';
+import ProductImage from '../models/Product/ProductImage';
 
 export const getProfile = async (req: Request, res: Response) => {
     try {
@@ -54,6 +55,22 @@ export const viewProducts = async (req: Request, res: Response) => {
     }
 }
 
+export const viewProduct = async (req: Request, res: Response) => {
+    try {
+        const productId = req.params.productId;
+
+        let product = await Product.findById(productId);
+        if (!product) {
+            return res.status(404).json({ error: 'Product not found' });
+        }
+
+        const imageUrls = await ProductImage.find({ product: productId });
+        res.status(200).json({ ...product.toJSON(), imageUrls });
+    } catch (error) {
+
+    }
+}
+
 export const addToCart = async (req: Request, res: Response) => {
     try {
         const customerId = (req as any).user.userId; // Replace with how you get the user ID from authentication
@@ -74,8 +91,7 @@ export const addToCart = async (req: Request, res: Response) => {
             existingItem.quantity += quantity;
         } else {
             // If not, add a new item to the cart
-            const result: any = await Product.findById(productId).select("price");
-            cart.items.push({ product: productId, quantity, unitPrice: result.price });
+            cart.items.push({ product: productId, quantity });
         }
 
         // Save the updated cart
@@ -93,7 +109,10 @@ export const viewCart = async (req: Request, res: Response) => {
         const customerId = (req as any).user.userId;
 
         // Find the user's cart based on their customerId
-        const cart = await Cart.findOne({ user: customerId });
+        const cart = await Cart.findOne({ user: customerId }).populate({
+            path: 'items.product',
+            select: 'name price thumbnail',
+        });
 
         if (!cart) {
             return res.status(404).json({ error: 'Cart not found' });
@@ -198,27 +217,16 @@ export const emptyCart = async (req: Request, res: Response) => {
 export const createOrder = async (req: Request, res: Response) => {
     try {
         const customerId = (req as any).user.userId;
-        const { products, totalAmount, shippingAddress } = req.body; // add paymentInfo later
+        const { products } = req.body; // add paymentInfo later
 
         // Validate input (you can add more validation as needed)
-        if (!customerId || !products || !totalAmount || !shippingAddress) { // check for paymentInfo later
+        if (!customerId || !products) { // check for paymentInfo later
             return res.status(400).json({ error: 'Invalid input data' });
-        }
-
-        // Calculate the expected total amount
-        const expectedTotalAmount = products.reduce((accumulator: Number, currentProduct: any) => {
-            return accumulator + currentProduct.unitPrice;
-        }, 0);
-
-        if (expectedTotalAmount !== totalAmount) {
-            return res.status(400).json({ error: 'Invalid total amount' });
         }
 
         const newOrder = await Order.create({
             user: customerId,
             products,
-            totalAmount,
-            shippingAddress,
         });
 
         res.status(201).json({ message: 'Order created successfully', order: newOrder });
@@ -230,8 +238,12 @@ export const createOrder = async (req: Request, res: Response) => {
 
 export const getOrders = async (req: Request, res: Response) => {
     try {
-        const orders = await Order.find();
-        res.status(200).json({ orders });
+        const customerId = (req as any).user.userId;
+        const orders = await Order.find({ user: customerId }).populate({
+            path: 'products.product',
+            select: 'name price thumbnail'
+        }).sort({ orderDate: -1 });
+        res.status(200).json(orders);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Internal server error' });

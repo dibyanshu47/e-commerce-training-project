@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Login: React.FC = () => {
+
+    const navigate = useNavigate();
+
     const [formData, setFormData] = useState({ email: '', password: '' });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -9,10 +13,18 @@ const Login: React.FC = () => {
         setFormData({ ...formData, [name]: value });
     };
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         // Add login logic here
-        console.log('Logging in with:', formData);
+        try {
+            const { data } = await axios.post('http://localhost:8000/user/login', formData);
+            console.log(data);
+            const { id, name, role, token } = data;
+            localStorage.setItem('user', JSON.stringify({ id, name, role, token }));
+            navigate('/');
+        } catch (error: any) {
+            console.log('Error while log in:', error.message);
+        }
     };
 
     return (
