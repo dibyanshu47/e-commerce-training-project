@@ -23,7 +23,6 @@ const Register: React.FC = () => {
         // Add registration logic here
         try {
             const { data } = await axios.post(`${process.env.REACT_APP_BACKEND}/user/register`, formData);
-            console.log(data);
             const { id, name, role, token } = data;
             localStorage.setItem('user', JSON.stringify({ id, name, role, token }));
             navigate('/');

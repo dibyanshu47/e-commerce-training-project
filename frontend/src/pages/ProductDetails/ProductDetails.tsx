@@ -2,28 +2,24 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import './styles.css';
+import Loading from '../../components/Loading/Loading';
+import { ToastContainer, toast } from 'react-toastify';
 
-type product = {
-    id: string,
-    name: string,
-    description: string,
-    price: number,
-    imageUrls: string[]
-} | null;
 
 const ProductDetails: React.FC = () => {
 
     const { token } = JSON.parse(localStorage.getItem('user') as string);
 
     const { productId } = useParams();
-    const [product, setProduct] = useState(null as product);
+    const [product, setProduct] = useState(null as any);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const getProductDetails = async () => {
             try {
-                const { data } = await axios.get(`http://localhost:8000/customer/products/${productId}`, { headers: { 'Authorization': `Bearer ${token}` } })
-                console.log(data)
+                const { data } = await axios.get(`${process.env.REACT_APP_BACKEND}/customer/products/${productId}`, { headers: { 'Authorization': `Bearer ${token}` } })
                 setProduct(data);
+                setLoading(false);
             } catch (error: any) {
                 console.log('Error while fetching product details:', error.message);
             }
@@ -40,8 +36,8 @@ const ProductDetails: React.FC = () => {
 
     const addToCart = async () => {
         try {
-            const { data } = await axios.post('http://localhost:8000/customer/cart/', { productId, quantity }, { headers: { 'Authorization': `Bearer ${token}` } })
-            console.log(data);
+            await axios.post(`${process.env.REACT_APP_BACKEND}/customer/cart/`, { productId, quantity }, { headers: { 'Authorization': `Bearer ${token}` } })
+            toast.success(`${product.name} Added to Cart`)
         } catch (error: any) {
             console.log('Error while adding to cart:', error.message);
         }
@@ -49,12 +45,13 @@ const ProductDetails: React.FC = () => {
 
     return (
         <div className="container navbar-spacing">
-            {product && (
+            <ToastContainer />
+            {loading ? <Loading /> : (
                 <div className="row">
                     <div className="col-md-6">
                         <div id="product-images-carousel" className="carousel slide" data-ride="carousel">
                             <div className="carousel-inner">
-                                {product.imageUrls.map((image: any, index) => (
+                                {product.imageUrls.map((image: any, index: number) => (
                                     <div
                                         key={index}
                                         className={`carousel-item${index === 0 ? ' active' : ''}`}

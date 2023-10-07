@@ -1,6 +1,7 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Loading from '../../components/Loading/Loading';
 
 const CartPage: React.FC = () => {
 
@@ -9,13 +10,14 @@ const CartPage: React.FC = () => {
     const { token } = JSON.parse(localStorage.getItem('user') as string);
 
     const [cartItems, setCartItems] = useState([] as any);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const getCart = async () => {
             try {
-                const { data } = await axios.get('http://localhost:8000/customer/cart', { headers: { 'Authorization': `Bearer ${token}` } });
-                console.log(data);
+                const { data } = await axios.get(`${process.env.REACT_APP_BACKEND}/customer/cart`, { headers: { 'Authorization': `Bearer ${token}` } });
                 setCartItems(data.items);
+                setLoading(false);
             } catch (error: any) {
                 console.log('Error while fetching cart:', error.message);
             }
@@ -30,7 +32,7 @@ const CartPage: React.FC = () => {
 
     const handleUpdateQuantity = async (id: any, q: any) => {
         try {
-            axios.put('http://localhost:8000/customer/cart', { productId: id, quantity: q }, { headers: { 'Authorization': `Bearer ${token}` } })
+            axios.put(`${process.env.REACT_APP_BACKEND}/customer/cart`, { productId: id, quantity: q }, { headers: { 'Authorization': `Bearer ${token}` } })
             const updatedCartItems = cartItems.map((item: any) =>
                 item.product._id === id
                     ? { ...item, quantity: parseInt(q) }
@@ -45,7 +47,7 @@ const CartPage: React.FC = () => {
     const handleRemoveFromCart = async (id: any) => {
         // Remove the item from the cart
         try {
-            await axios.delete(`http://localhost:8000/customer/cart/${id}`, { headers: { 'Authorization': `Bearer ${token}` } });
+            await axios.delete(`${process.env.REACT_APP_BACKEND}/customer/cart/${id}`, { headers: { 'Authorization': `Bearer ${token}` } });
             const updatedCartItems = cartItems.filter((item: any) => item.product._id !== id);
             setCartItems(updatedCartItems);
         } catch (error: any) {
@@ -60,8 +62,8 @@ const CartPage: React.FC = () => {
                 product: item.product._id,
                 quantity: item.quantity
             }))
-            await axios.post('http://localhost:8000/customer/order', { products }, { headers: { 'Authorization': `Bearer ${token}` } });
-            await axios.delete('http://localhost:8000/customer/cart', { headers: { 'Authorization': `Bearer ${token}` } });
+            await axios.post(`${process.env.REACT_APP_BACKEND}/customer/order`, { products }, { headers: { 'Authorization': `Bearer ${token}` } });
+            await axios.delete(`${process.env.REACT_APP_BACKEND}/customer/cart`, { headers: { 'Authorization': `Bearer ${token}` } });
             navigate('/orders');
         } catch (error: any) {
             console.log('Error while creating order:', error.message);
@@ -73,58 +75,62 @@ const CartPage: React.FC = () => {
             <div className="row">
                 <div className="col">
                     <h2>Your Cart</h2>
-                    <table className="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Image</th>
-                                <th>Name</th>
-                                <th>Price</th>
-                                <th>Quantity</th>
-                                <th>Total</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {cartItems.map((item: any) => (
-                                <tr key={item.product._id}>
-                                    <td>
-                                        <img
-                                            src={item.product.thumbnail}
-                                            alt={item.product.name}
-                                            style={{ maxWidth: '100px', maxHeight: '100px' }}
-                                        />
-                                    </td>
-                                    <td>{item.product.name}</td>
-                                    <td>${item.product.price.toFixed(2)}</td>
-                                    <td>
-                                        <select
-                                            value={item.quantity}
-                                            onChange={(e) => handleUpdateQuantity(item.product._id, e.target.value)}
-                                        >
-                                            {[1, 2, 3, 4, 5, 6].map((quantity) => (
-                                                <option key={quantity} value={quantity}>
-                                                    {quantity}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </td>
-                                    <td>${(item.product.price * item.quantity).toFixed(2)}</td>
-                                    <td>
-                                        <button
-                                            className="btn btn-danger btn-sm"
-                                            onClick={() => handleRemoveFromCart(item.product._id)}
-                                        >
-                                            Remove
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                    <div className="text-end">
-                        <h4>Total: ${calculateTotal().toFixed(2)}</h4>
-                        <button className="btn btn-primary" onClick={placeOrder}>Checkout</button>
-                    </div>
+                    {loading ? <Loading /> : (
+                        <>
+                            <table className="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Image</th>
+                                        <th>Name</th>
+                                        <th>Price</th>
+                                        <th>Quantity</th>
+                                        <th>Total</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {cartItems.map((item: any) => (
+                                        <tr key={item.product._id}>
+                                            <td>
+                                                <img
+                                                    src={item.product.thumbnail}
+                                                    alt={item.product.name}
+                                                    style={{ maxWidth: '100px', maxHeight: '100px' }}
+                                                />
+                                            </td>
+                                            <td>{item.product.name}</td>
+                                            <td>${item.product.price.toFixed(2)}</td>
+                                            <td>
+                                                <select
+                                                    value={item.quantity}
+                                                    onChange={(e) => handleUpdateQuantity(item.product._id, e.target.value)}
+                                                >
+                                                    {[1, 2, 3, 4, 5, 6].map((quantity) => (
+                                                        <option key={quantity} value={quantity}>
+                                                            {quantity}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </td>
+                                            <td>${(item.product.price * item.quantity).toFixed(2)}</td>
+                                            <td>
+                                                <button
+                                                    className="btn btn-danger btn-sm"
+                                                    onClick={() => handleRemoveFromCart(item.product._id)}
+                                                >
+                                                    Remove
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                            <div className="text-end">
+                                <h4>Total: ${calculateTotal().toFixed(2)}</h4>
+                                <button className="btn btn-primary" onClick={placeOrder}>Place Order</button>
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
         </div>
