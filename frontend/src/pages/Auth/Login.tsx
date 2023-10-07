@@ -17,7 +17,7 @@ const Login: React.FC = () => {
         e.preventDefault();
         // Add login logic here
         try {
-            const { data } = await axios.post('http://localhost:8000/user/login', formData);
+            const { data } = await axios.post(`${process.env.REACT_APP_BACKEND}/user/login`, formData);
             console.log(data);
             const { id, name, role, token } = data;
             localStorage.setItem('user', JSON.stringify({ id, name, role, token }));

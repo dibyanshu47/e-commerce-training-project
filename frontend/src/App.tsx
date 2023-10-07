@@ -7,6 +7,7 @@ import Orders from './pages/Orders/Orders';
 import Navbar from './components/Navbar/Navbar';
 import ProductDetails from './pages/ProductDetails/ProductDetails';
 import Products from './pages/Products/Products';
+import ProtectedRoute from './pages/ProtectedRoute';
 
 const App = () => {
     // Get the current route location using useLocation from react-router-dom
@@ -22,12 +23,12 @@ const App = () => {
         <>
             {isNavbarVisible && <Navbar />}
             <Routes>
-                <Route path="/" element={<Products />} />
-                <Route path="/products/:productId" element={<ProductDetails />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/orders" element={<Orders />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/" element={<ProtectedRoute><Products /></ProtectedRoute>} />
+                <Route path="/products/:productId" element={<ProtectedRoute><ProductDetails /></ProtectedRoute>} />
+                <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+                <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
             </Routes>
         </>
     );

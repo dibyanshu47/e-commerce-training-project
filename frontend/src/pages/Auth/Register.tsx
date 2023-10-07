@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import axios from 'axios';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Register: React.FC = () => {
+
+    const navigate = useNavigate();
+
     const [formData, setFormData] = useState({
         name: '',
         email: '',
         password: '',
-        role: '', // Set the default value to an empty string
+        category: '', // Set the default value to an empty string
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -14,10 +18,18 @@ const Register: React.FC = () => {
         setFormData({ ...formData, [name]: value });
     };
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         // Add registration logic here
-        console.log('Registering with:', formData);
+        try {
+            const { data } = await axios.post(`${process.env.REACT_APP_BACKEND}/user/register`, formData);
+            console.log(data);
+            const { id, name, role, token } = data;
+            localStorage.setItem('user', JSON.stringify({ id, name, role, token }));
+            navigate('/');
+        } catch (error: any) {
+            console.log('Error while registering:', error.message);
+        }
     };
 
     return (
@@ -73,14 +85,14 @@ const Register: React.FC = () => {
                                     />
                                 </div>
                                 <div className="mb-3">
-                                    <label htmlFor="role" className="form-label">
+                                    <label htmlFor="category" className="form-label">
                                         Role
                                     </label>
                                     <select
                                         className="form-select"
-                                        id="role"
-                                        name="role"
-                                        value={formData.role}
+                                        id="category"
+                                        name="category"
+                                        value={formData.category}
                                         onChange={handleChange}
                                     >
                                         <option value="" disabled>Select a Role</option>
