@@ -88,7 +88,10 @@ export const addToCart = async (req: Request, res: Response) => {
 
         if (existingItem) {
             // If the item exists, update its quantity
-            existingItem.quantity += quantity;
+            if (existingItem + quantity <= 6)
+                existingItem.quantity += quantity;
+            else
+                existingItem.quantity = 6;
         } else {
             // If not, add a new item to the cart
             cart.items.push({ product: productId, quantity });
@@ -109,13 +112,14 @@ export const viewCart = async (req: Request, res: Response) => {
         const customerId = (req as any).user.userId;
 
         // Find the user's cart based on their customerId
-        const cart = await Cart.findOne({ user: customerId }).populate({
+        let cart = await Cart.findOne({ user: customerId }).populate({
             path: 'items.product',
             select: 'name price thumbnail',
         });
 
         if (!cart) {
-            return res.status(404).json({ error: 'Cart not found' });
+            cart = new Cart({ user: customerId, items: [] });
+            await cart.save();
         }
 
         // Send the cart contents as the response
