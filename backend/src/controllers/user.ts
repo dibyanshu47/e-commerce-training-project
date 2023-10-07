@@ -34,13 +34,13 @@ export const register = async (req: Request, res: Response) => {
         const hashedPassword = await bcrypt.hash(password, 10); // 10 is the number of salt rounds
 
         // Create a new user document and save to the database
-        const newUser = await User.create({ name, password: hashedPassword, email, userCategory: userCategory._id });
+        const newUser: any = await User.create({ name, password: hashedPassword, email, userCategory: userCategory._id });
 
         // Generate a JWT token for the registered user
         const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET_KEY);
 
         // Return the token in the response along with the user data
-        return res.status(201).json({ message: 'Registration successful', user: newUser, token });
+        return res.status(201).json({ message: 'Registration successful', id: newUser._id, name: newUser.name, role: newUser.userCategory.name, token });
     } catch (error) {
         console.error('Error during registration:', error);
         return res.status(500).json({ message: 'Registration failed. Please try again later.' });
