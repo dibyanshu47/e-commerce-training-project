@@ -1,6 +1,7 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import Loading from '../../components/Loading/Loading';
+import Navbar from '../../components/Navbar/Navbar';
 
 const Orders: React.FC = () => {
 
@@ -37,56 +38,59 @@ const Orders: React.FC = () => {
     };
 
     return (
-        <div className="container navbar-spacing">
-            <div className="row">
-                <div className="col">
-                    <h2>Order History</h2>
-                    {loading ? <Loading /> : (
-                        <table className="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Items</th>
-                                    <th>Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {orderHistory.map((order: any) => (
-                                    <tr key={order._id}>
-                                        <td>{formatDate(order.orderDate)}</td>
-                                        {/* <td>
+        <>
+            <Navbar />
+            <div className="container navbar-spacing">
+                <div className="row">
+                    <div className="col">
+                        <h2>Order History</h2>
+                        {loading ? <Loading /> : (
+                            <table className="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Items</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {orderHistory.map((order: any) => (
+                                        <tr key={order._id}>
+                                            <td>{formatDate(order.orderDate)}</td>
+                                            {/* <td>
                                         <div>
                                             <p>{order.shippingAddress.addressLine1}</p>
                                             <p>{order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}</p>
                                         </div>
                                     </td> */}
-                                        <td>
-                                            <ul>
-                                                {order.products.map((item: any, index: any) => (
-                                                    <li key={index}>
-                                                        <img
-                                                            src={item.product.thumbnail}
-                                                            alt={item.name}
-                                                            style={{
-                                                                maxWidth: '50px',
-                                                                maxHeight: '50px',
-                                                                marginRight: '10px',
-                                                            }}
-                                                        />
-                                                        {item.product.name} (Qty: {item.quantity}) - ${item.product.price.toFixed(2)}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </td>
-                                        <td>${calculateTotal(order.products).toFixed(2)}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    )}
+                                            <td>
+                                                <ul>
+                                                    {order.products.map((item: any, index: any) => (
+                                                        <li key={index}>
+                                                            <img
+                                                                src={item.product.thumbnail}
+                                                                alt={item.name}
+                                                                style={{
+                                                                    maxWidth: '50px',
+                                                                    maxHeight: '50px',
+                                                                    marginRight: '10px',
+                                                                }}
+                                                            />
+                                                            {item.product.name} (Qty: {item.quantity}) - ${item.product.price.toFixed(2)}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </td>
+                                            <td>${calculateTotal(order.products).toFixed(2)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 };
 

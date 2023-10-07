@@ -3,6 +3,7 @@ import axios from 'axios';
 
 import Product from '../../components/Product/Product';
 import Loading from '../../components/Loading/Loading';
+import Navbar from '../../components/Navbar/Navbar';
 
 const Products: React.FC = () => {
 
@@ -26,19 +27,22 @@ const Products: React.FC = () => {
 
 
     return (
-        <div className="container navbar-spacing">
-            <h1>Product Listing</h1>
-            {loading ? <Loading /> : (
-                <div className="row">
-                    {products.map((product: any, index) => (
-                        <div className="col-md-4" key={index}>
-                            <Product id={product._id} name={product.name} price={product.price} thumbnail={product.thumbnail} />
-                        </div>
-                    ))}
-                </div>
+        <>
+            <Navbar />
+            <div className="container navbar-spacing">
+                <h1>Product Listing</h1>
+                {loading ? <Loading /> : (
+                    <div className="row">
+                        {products.map((product: any, index) => (
+                            <div className="col-md-4" key={index}>
+                                <Product id={product._id} name={product.name} price={product.price} thumbnail={product.thumbnail} />
+                            </div>
+                        ))}
+                    </div>
 
-            )}
-        </div>
+                )}
+            </div>
+        </>
     );
 };
 

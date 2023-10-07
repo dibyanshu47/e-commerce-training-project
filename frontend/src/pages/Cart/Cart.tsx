@@ -2,6 +2,7 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Loading from '../../components/Loading/Loading';
+import Navbar from '../../components/Navbar/Navbar';
 
 const CartPage: React.FC = () => {
 
@@ -71,69 +72,72 @@ const CartPage: React.FC = () => {
     }
 
     return (
-        <div className="container navbar-spacing">
-            <div className="row">
-                <div className="col">
-                    <h2>Your Cart</h2>
-                    {loading ? <Loading /> : (
-                        <>
-                            <table className="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Image</th>
-                                        <th>Name</th>
-                                        <th>Price</th>
-                                        <th>Quantity</th>
-                                        <th>Total</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {cartItems.map((item: any) => (
-                                        <tr key={item.product._id}>
-                                            <td>
-                                                <img
-                                                    src={item.product.thumbnail}
-                                                    alt={item.product.name}
-                                                    style={{ maxWidth: '100px', maxHeight: '100px' }}
-                                                />
-                                            </td>
-                                            <td>{item.product.name}</td>
-                                            <td>${item.product.price.toFixed(2)}</td>
-                                            <td>
-                                                <select
-                                                    value={item.quantity}
-                                                    onChange={(e) => handleUpdateQuantity(item.product._id, e.target.value)}
-                                                >
-                                                    {[1, 2, 3, 4, 5, 6].map((quantity) => (
-                                                        <option key={quantity} value={quantity}>
-                                                            {quantity}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </td>
-                                            <td>${(item.product.price * item.quantity).toFixed(2)}</td>
-                                            <td>
-                                                <button
-                                                    className="btn btn-danger btn-sm"
-                                                    onClick={() => handleRemoveFromCart(item.product._id)}
-                                                >
-                                                    Remove
-                                                </button>
-                                            </td>
+        <>
+            <Navbar />
+            <div className="container navbar-spacing">
+                <div className="row">
+                    <div className="col">
+                        <h2>Your Cart</h2>
+                        {loading ? <Loading /> : (
+                            <>
+                                <table className="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Image</th>
+                                            <th>Name</th>
+                                            <th>Price</th>
+                                            <th>Quantity</th>
+                                            <th>Total</th>
+                                            <th>Action</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                            <div className="text-end">
-                                <h4>Total: ${calculateTotal().toFixed(2)}</h4>
-                                <button className="btn btn-primary" onClick={placeOrder}>Place Order</button>
-                            </div>
-                        </>
-                    )}
+                                    </thead>
+                                    <tbody>
+                                        {cartItems.map((item: any) => (
+                                            <tr key={item.product._id}>
+                                                <td>
+                                                    <img
+                                                        src={item.product.thumbnail}
+                                                        alt={item.product.name}
+                                                        style={{ maxWidth: '100px', maxHeight: '100px' }}
+                                                    />
+                                                </td>
+                                                <td>{item.product.name}</td>
+                                                <td>${item.product.price.toFixed(2)}</td>
+                                                <td>
+                                                    <select
+                                                        value={item.quantity}
+                                                        onChange={(e) => handleUpdateQuantity(item.product._id, e.target.value)}
+                                                    >
+                                                        {[1, 2, 3, 4, 5, 6].map((quantity) => (
+                                                            <option key={quantity} value={quantity}>
+                                                                {quantity}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </td>
+                                                <td>${(item.product.price * item.quantity).toFixed(2)}</td>
+                                                <td>
+                                                    <button
+                                                        className="btn btn-danger btn-sm"
+                                                        onClick={() => handleRemoveFromCart(item.product._id)}
+                                                    >
+                                                        Remove
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                                <div className="text-end">
+                                    <h4>Total: ${calculateTotal().toFixed(2)}</h4>
+                                    <button className="btn btn-primary" onClick={placeOrder}>Place Order</button>
+                                </div>
+                            </>
+                        )}
+                    </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 };
 
